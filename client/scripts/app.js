@@ -230,6 +230,7 @@ var readyEnterRoom = function(){
 // initializing all event listeners
 // and does an initial fetch for messages
 $(document).ready(function() {
+  console.log("The document is ready!");
   readyUsernameOnClick();
   readySubmitButtonClick();
   readySubmitButtonSubmit();
@@ -237,6 +238,7 @@ $(document).ready(function() {
   readyRetrieveUsername();
   readyMakeNewRoom();
   readyEnterRoom();
+  console.log("About to run init!");
   app.init();
   app.fetch();
 });
