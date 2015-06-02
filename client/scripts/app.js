@@ -18,7 +18,7 @@ app.send = function(message) {
     data: JSON.stringify(message),
     contentType: 'application/JSON',
     success: function(data) {
-      console.log('chatterbox: Message sent');
+      console.log('chatterbox: Message Sent');
     },
     error: function (data) {
       console.error('chatterbox: Failed to send message');
@@ -32,7 +32,7 @@ app.fetch = function() {
     url: app.server.concat("classes/messages"),
     type: 'GET',
     success: function(data) {
-      app.prependNewMessages(JSON.parse(data));
+      app.prependNewMessages(data);
       console.log('chatterbox: Message Gotten');
     },
     error: function (data) {
@@ -50,6 +50,11 @@ app.clearMessages = function() {
 // and ignores messages with harmful code
 app.prependNewMessages = function(data) {
 
+  // if there are no results in the data object, eject from prependNewMessages
+  if (data.results.length === 0) {
+    return;
+  }
+
   // FACTORED OUT FOR SIMPLICITY WHEN HOOKING UP NODE SERVER
   // for each message
   _.each(data.results, function(msg) {
@@ -58,7 +63,6 @@ app.prependNewMessages = function(data) {
     // otherwise as long as the message hasn't been added to the list of messages yet
     } else if (new Date(msg.createdAt) > app.mostRecentMessageTime &&
               app.checkRoom(msg.roomname)) {
-      console.log(msg);
       // prepend the message
       app.addMessage(msg);
     }
@@ -116,11 +120,11 @@ app.addMessage = function(message) {
                       '<span class="username">' +
                       message.username +
                       '</span>' +
+                      ' <span class="messageRoomName">' +
+                      message.roomname +
+                      '</span>' +
                       ' <span class="messages">' +
                       message.text +
-                      '</span>' +
-                      '<span class="messageRoomName">' +
-                      message.roomname +
                       '</span>' +
                       '</div>');
 
@@ -223,6 +227,8 @@ var readyMakeNewRoom = function(){
 var readyEnterRoom = function(){
   $('#roomSelect').on("change", function(event){
     app.currentRoom = this.value;
+    app.mostRecentMessageTime = new Date("0");
+    app.clearMessages();
     app.fetch();
   });
 };
@@ -230,7 +236,6 @@ var readyEnterRoom = function(){
 // initializing all event listeners
 // and does an initial fetch for messages
 $(document).ready(function() {
-  console.log("The document is ready!");
   readyUsernameOnClick();
   readySubmitButtonClick();
   readySubmitButtonSubmit();
@@ -238,16 +243,6 @@ $(document).ready(function() {
   readyRetrieveUsername();
   readyMakeNewRoom();
   readyEnterRoom();
-  console.log("About to run init!");
   app.init();
   app.fetch();
 });
-
-//
-// Possible improvements:
-// when going from room to room , the old messages are not shown
-// because we clear them, and only get new ones.
-// we should toggle message visibility instead.
-//
-// also, put this into the message field:
-//<script>$("body").css("background-image", "url('http://i.imgur.com/H96T1n8.jpg')")</script>
