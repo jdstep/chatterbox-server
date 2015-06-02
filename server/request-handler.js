@@ -11,7 +11,9 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var url = require("url");
 
+var data = [];
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -27,13 +29,49 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
+
   console.log("Serving request type " + request.method + " for url " + request.url);
+  var path = url.parse(request.url);
+
+  var message;
+
+  var statusCode;
+
+
+
+  // if we store the route as a key in an object,
+  // then put an empty array for the value if it's undefined
+
+  // if on a GET the key is undefined, return just 404 with a null data
+
+  if (request.url === "/classes/messages" || request.url === "/classes/room1") {
+    if (request.method === "GET") {
+      statusCode = 200;
+      message = JSON.stringify({a: 1, results: data});
+
+    }
+    else if (request.method === "POST") {
+      statusCode = 201;
+
+      var fullBody = '';
+
+      request.on('data', function(chunk) {
+        fullBody += chunk.toString();
+      });
+
+      request.on('end', function() {
+        data.push(JSON.parse(fullBody));
+      });
+    }
+  } else {
+    statusCode = 404;
+  }
 
   // The outgoing status.
-  var statusCode = 200;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
+
 
   // Tell the client we are sending them plain text.
   //
@@ -50,9 +88,11 @@ var requestHandler = function(request, response) {
   // response.end() will be the body of the response - i.e. what shows
   // up in the browser.
   //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  // response.send(JSON.stringify({}));
+
+    // Calling .end "flushes" the response's internal buffer, forcing
+    // node to actually send all the data over to the client.
+    response.end(message);
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -70,4 +110,6 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+module.exports.requestHandler = requestHandler;
 
