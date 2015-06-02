@@ -37,6 +37,8 @@ var requestHandler = function(request, response) {
 
   var statusCode;
 
+  console.log(request.url);
+
 
 
   // if we store the route as a key in an object,
@@ -45,6 +47,8 @@ var requestHandler = function(request, response) {
   // if on a GET the key is undefined, return just 404 with a null data
 
   if (request.url === "/classes/messages" || request.url === "/classes/room1") {
+    console.log("Accessed the URL correctly");
+
     if (request.method === "GET") {
       statusCode = 200;
       message = JSON.stringify({a: 1, results: data});
@@ -62,10 +66,15 @@ var requestHandler = function(request, response) {
       request.on('end', function() {
         data.push(JSON.parse(fullBody));
       });
+    } else if (request.method === "OPTIONS") {
+      statusCode = 200;
     }
   } else {
     statusCode = 404;
   }
+
+  console.log(message);
+
 
   // The outgoing status.
 
